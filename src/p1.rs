@@ -24,7 +24,12 @@ pub(crate) fn parse_term(iter: &mut (impl Iterator<Item = u8> + Clone)) -> PTerm
         }
         x if x.is_ascii_alphabetic() => PTerm::Var(parse_ident(x, iter)),
 
-        _ => parse_term(iter),
+        b'%' => {
+            while iter.next().unwrap() != b'\n' {}
+            parse_term(iter)
+        }
+
+        b => panic!("invalid byte: {b}"),
     }
 }
 
