@@ -14,14 +14,14 @@ impl Pass2 {
         use std::rc::Rc;
 
         let instr = match v {
-            PTerm::Var(s) => Instr::Var(self.get(s)),
+            PTerm::Var(s) => Instr::Var(self.get(&s)),
             PTerm::Abs(p, b) => {
                 self.vars.push(p);
                 let mut res = Vec::new();
                 self.parse(*b, &mut res);
                 self.vars.pop().unwrap();
 
-                Instr::Abs(Rc::new(Block(res)))
+                Instr::Abs(true, Rc::new(Block(res)))
             }
             PTerm::App(f, a) => {
                 let num_app = a.len();
@@ -29,6 +29,7 @@ impl Pass2 {
                 for i in a.into_iter().rev() {
                     self.parse(i, b);
                 }
+
                 self.parse(*f, b);
                 Instr::App(num_app)
             }
@@ -37,7 +38,7 @@ impl Pass2 {
         b.push(instr);
     }
 
-    fn get(&mut self, s: String) -> usize {
-        self.vars.iter().rev().position(|i| i == &s).expect(&s)
+    fn get(&mut self, s: &str) -> usize {
+        self.vars.iter().rev().position(|i| i == s).expect(s)
     }
 }

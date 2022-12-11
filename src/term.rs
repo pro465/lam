@@ -4,7 +4,7 @@ use std::rc::Rc;
 pub enum Instr {
     App(usize),
     Var(usize),
-    Abs(Rc<Block>),
+    Abs(bool, Rc<Block>),
 }
 
 #[derive(Clone, Debug, Default)]
@@ -16,19 +16,19 @@ impl Block {
     pub fn reduce(self) -> Block {
         let mut ret = Vec::new();
 
-        for c in self.0.into_iter() {
+        for c in self.0 {
             match c {
                 App(n) => {
                     let mut f = take(ret.pop().unwrap());
                     for _ in 0..n {
                         let a = ret.pop().unwrap();
 
-                        f.substitute(0, a);
+                        f.substitute(0, &a);
                         f = f.reduce();
                     }
                     ret.push(Rc::new(f))
                 }
-                Abs(f) => ret.push(f),
+                Abs(_, f) => ret.push(f),
                 _ => unreachable!(),
             }
         }
@@ -36,11 +36,11 @@ impl Block {
         take(ret.pop().unwrap())
     }
 
-    fn substitute(&mut self, dom: usize, a: Rc<Block>) {
+    fn substitute(&mut self, dom: usize, a: &Rc<Block>) {
         for b in &mut self.0 {
             match b {
-                Var(x) if dom == *x => *b = Instr::Abs(a.clone()),
-                Abs(b) => Rc::make_mut(b).substitute(dom + 1, a.clone()),
+                Var(x) if dom == *x => *b = Instr::Abs(false, a.clone()),
+                Abs(true, b) => Rc::make_mut(b).substitute(dom + 1, a),
                 _ => {}
             }
         }
@@ -58,7 +58,7 @@ impl Block {
                     print!("`")
                 }
             }
-            Abs(b) => {
+            Abs(_, b) => {
                 b.print();
             }
         });

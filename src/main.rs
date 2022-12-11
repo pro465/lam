@@ -16,7 +16,9 @@ fn main() {
 fn help() -> ! {
     println!(
         "usage: {} <filename>",
-        std::env::current_exe().unwrap_or("lam".into()).display()
+        std::env::current_exe()
+            .unwrap_or_else(|_| "lam".into())
+            .display()
     );
     std::process::exit(-1);
 }

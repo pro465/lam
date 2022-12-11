@@ -39,8 +39,7 @@ pub(crate) fn parse_term(iter: &mut (impl Iterator<Item = u8> + Clone)) -> PTerm
 
 fn parse_ident(first: u8, iter: &mut (impl Iterator<Item = u8> + Clone)) -> String {
     let mut s: String = (first as char).try_into().unwrap();
-    let mut iter_clone = iter.clone();
-    while let Some(x) = iter_clone.next() {
+    for x in iter.clone() {
         if !x.is_ascii_alphanumeric() {
             break;
         }
